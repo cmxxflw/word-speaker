@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>单词发音器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #wordList {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .word-item {
+            padding: 8px 15px;
+            background-color: #e8f5e9;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .word-item:hover {
+            background-color: #c8e6c9;
+            transform: scale(1.05);
+        }
+
+        .word-item.speaking {
+            background-color: #81c784;
+            color: white;
+        }
+
+        .notice {
+            color: #666;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>单词发音器</h2>
+        <div class="notice">
+            📌 请在下框中输入单词（每行一个单词），点击生成后即可点击单词发音<br>
+            ⚠️ 需要浏览器支持语音合成功能（建议使用Chrome浏览器）
+        </div>
+        
+        <textarea id="inputWords" placeholder="请输入要学习的单词（每行一个），例如：\napple\nbanana\ncomputer"></textarea>
+        <button onclick="generateWordList()">生成单词列表</button>
+        <div id="wordList"></div>
+    </div>
+
+    <script>
+        function speakWord(word) {
+            // 检查浏览器支持情况
+            if (!window.speechSynthesis) {
+                alert("您的浏览器不支持语音合成功能，请使用Chrome浏览器");
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(word);
+            
+            // 设置发音参数
+            utterance.lang = 'en-US'; // 设置为美式英语发音
+            utterance.rate = 0.9;    // 语速
+            utterance.pitch = 1.2;   // 音高
+
+            // 发音开始时的样式变化
+            const wordElement = event.target;
+            wordElement.classList.add('speaking');
+            
+            // 发音结束后的回调
+            utterance.onend = () => {
+                wordElement.classList.remove('speaking');
+            };
+
+            synth.speak(utterance);
+        }
+
+        function generateWordList() {
+            const input = document.getElementById('inputWords').value;
+            const wordList = document.getElementById('wordList');
+            wordList.innerHTML = '';
+
+            // 处理输入内容
+            const words = input.split('\n')
+                .map(word => word.trim())
+                .filter(word => word.length > 0);
+
+            if (words.length === 0) {
+                alert("请输入至少一个单词");
+                return;
+            }
+
+            // 生成可点击的单词元素
+            words.forEach(word => {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word-item';
+                wordElement.textContent = word;
+                wordElement.onclick = (e) => speakWord(word);
+                wordList.appendChild(wordElement);
+            });
+        }
+
+        // 初始化示例文本
+        window.onload = () => {
+            document.getElementById('inputWords').value = "apple\nbanana\nhello\ncomputer\ngoodbye\nthank you";
+            generateWordList();
+        };
+    </script>
+</body>
+</html>
